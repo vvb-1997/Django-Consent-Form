@@ -4,6 +4,8 @@ from django.views.generic import CreateView
 # from django.core.mail import send_mail
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from django.core.exceptions import ValidationError
+from django.contrib import messages
 
 from .models import Consent, NjConsentData
 from .forms import ConsentForm, NjConsentForm
@@ -35,7 +37,16 @@ class njconsentview(CreateView):
     form_class = NjConsentForm
     success_url = reverse_lazy('success')
 
+    def clean(self, form):
+        cd = form.cleaned_data
+        if cd.get('authorize_checkbox') == False:
+            self.add_error('authorize_checkbox', "passwords do not match !")
+        return cd
+
     def form_valid(self, form):
+        # if (form.cleaned_data.get('authorize_checkbox') == False):
+        #     messages.error(self.request, 'Please accept the authorize checkbox')
+        #     raise ValidationError('is not an even number')
         self.request.session['form-submitted'] = True
         message = f"{form.cleaned_data.get('first_name')} {form.cleaned_data.get('last_name')} here is the form you submitted"
         # send_email([form.cleaned_data.get('email')], "Consent Form", message)

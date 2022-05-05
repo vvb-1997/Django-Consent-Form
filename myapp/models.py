@@ -1,3 +1,4 @@
+from typing_extensions import Required
 from django.db import models
 from django import forms
 
@@ -91,16 +92,16 @@ class NjConsentData(models.Model):
     race = models.CharField(max_length=50, choices=RACE, default=RACE[0][0])
     ethnicity = models.CharField('Hispanic/Latino', max_length=20, choices=HISPANIC_CHOICE,
                                  default=HISPANIC_CHOICE[0][0])
+
+    # authorize_checkbox = models.BooleanField(null=False)
+
     phone_no = PhoneNumberField("Phone")
     email = models.EmailField("Email")
 
     signature_name = models.CharField(max_length=260)
     date = models.DateField()
 
-
-
 class Consent(models.Model):
-    SCHOOL_COUNTY = ()
     OFFICE_LOCATIONS = (
         ('Atlanta, GA', 'Atlanta, GA'),
         ('Boston, MA', 'Boston, MA'),
