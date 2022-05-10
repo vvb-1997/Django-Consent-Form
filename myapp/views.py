@@ -7,6 +7,9 @@ from django.urls import reverse_lazy
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 
+import random
+import string
+
 from .models import Consent, NjConsentData
 from .forms import ConsentForm, NjConsentForm
 from .functions import send_email
@@ -37,18 +40,18 @@ class njconsentview(CreateView):
     form_class = NjConsentForm
     success_url = reverse_lazy('success')
 
-    def clean(self, form):
-        cd = form.cleaned_data
-        if cd.get('authorize_checkbox') == False:
-            self.add_error('authorize_checkbox', "passwords do not match !")
-        return cd
+    # def id_generator(size=12, chars=string.ascii_uppercase + string.digits):
+    #     return ''.join(random.choice(chars) for _ in range(size))
+
+    def form_invalid(self, form):
+        print('invalid')
+        print(form.errors)
+        print(form.cleaned_data)
 
     def form_valid(self, form):
-        # if (form.cleaned_data.get('authorize_checkbox') == False):
-        #     messages.error(self.request, 'Please accept the authorize checkbox')
-        #     raise ValidationError('is not an even number')
-        self.request.session['form-submitted'] = True
-        message = f"{form.cleaned_data.get('first_name')} {form.cleaned_data.get('last_name')} here is the form you submitted"
+        print("Here")
+        # self.request.session['form-submitted'] = True
+        # message = f"{form.cleaned_data.get('first_name')} {form.cleaned_data.get('last_name')} here is the form you submitted"
         # send_email([form.cleaned_data.get('email')], "Consent Form", message)
         # send_mail(
         #     subject='Consent Form',
@@ -56,6 +59,7 @@ class njconsentview(CreateView):
         #     from_email='contact-form@myapp.com',
         #     recipient_list=[form.cleaned_data.get('email')],
         # )
+
         return super().form_valid(form)
 
 def success(request):

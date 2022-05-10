@@ -4,7 +4,8 @@ from django import forms
 
 from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
-
+import random
+import string
 
 class NjSchool(models.Model):
     school_name = models.CharField(max_length=255)
@@ -73,7 +74,7 @@ class NjConsentData(models.Model):
         ('No', 'No'),
         ('Unknown', 'Unknown'),
     )
-
+    id_hash = models.CharField(max_length=12, blank=True, unique=True, primary_key=True)
     first_name = models.CharField('First Name', max_length=130)
     last_name = models.CharField('Last Name', max_length=130)
     gender = models.CharField(max_length=20, choices=GENDER, default=GENDER[0][0])
@@ -83,7 +84,7 @@ class NjConsentData(models.Model):
     school_district = models.ForeignKey(NjSchoolDistrict, on_delete=models.CASCADE)
 
     consenter_type = models.CharField(max_length=20, choices=CONSENTER_TYPE)
-    test_taker_dob = models.DateField()
+    # test_taker_dob = models.DateField()
     address1 = models.CharField("Home Address (Not a PO Box)", max_length=1024)
     address2 = models.CharField("Address line 2", max_length=1024, blank=True)
     zip_code = USZipCodeField("ZIP / Postal code", max_length=12)
@@ -98,8 +99,20 @@ class NjConsentData(models.Model):
     phone_no = PhoneNumberField("Phone")
     email = models.EmailField("Email")
 
-    signature_name = models.CharField(max_length=260)
+    # signature_name = models.CharField(max_length=260)
     date = models.DateField()
+
+    def id_generator(self, length_size=12, chars=string.ascii_uppercase + string.digits):
+        return ''.join(random.choice(str(chars)) for _ in range(length_size))
+
+    def save(self):
+        print("save")
+        if not self.id_hash:
+            # Generate ID once, then check the db. If exists, keep trying.
+            self.id_hash = self.id_generator()
+            while NjConsentData.objects.filter(id_hash=self.id_hash).exists():
+                self.id_hash = self.id_generator()
+        super().save()
 
 class Consent(models.Model):
     OFFICE_LOCATIONS = (
